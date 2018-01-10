@@ -1,0 +1,93 @@
+# test api serializer
+
+from django.test import TestCase
+from django.utils.six import BytesIO
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from django.contrib.auth.models import User
+from api.serializers import BookmarkSerializer, TagSerializer
+from api.models import Bookmark, Tag
+
+
+class BookmarkSerializerTest(TestCase):
+
+    tag = "linux"
+    title = "ubuntu website"
+    url="https://www.ubuntu.org"
+    comment="ubuntu is the best linux distribution"
+
+    def setUp(self):
+
+        user = User(username="test")
+        user.set_password("test123456")
+        user.save()
+        self.user = user
+        t = Tag.objects.create(name=self.tag)
+        b = Bookmark.objects.create(title=self.title, url=self.url, comment=self.comment, user=self.user)
+        b.tags.add(t)
+        b.save()
+
+    def test_dump_bookmarks(self):
+        bks = Bookmark.objects.get(url=self.url)
+        self.assertSequenceEqual(bks.title, self.title)
+        b = BookmarkSerializer(instance=bks)
+        self.assertEqual(b.data["tags"], [self.tag])
+        self.assertEqual(b.data["title"], self.title)
+        self.assertEqual(b.data["url"], self.url)
+        self.assertEqual(b.data["comment"], self.comment)
+
+    def test_save_bookmarks(self):
+        j = BytesIO(b'{"title": "Centos", "tags":["linux"], "url":"www.centos.org", "comment":"not bad"}')
+        data = JSONParser().parse(j)
+        b = BookmarkSerializer(data=data)
+        self.assertTrue(b.is_valid())
+        b.save(user=self.user)
+        bks = Bookmark.objects.get(url="www.centos.org")
+        self.assertSequenceEqual(bks.title, "Centos")
+
+    def test_save_bookmarks_with_new_tag(self):
+        j = BytesIO(b'{"title": "windows7", "tags":["windows"], "url":"www.microsoft.org", "comment":"cool"}')
+        data = JSONParser().parse(j)
+        b = BookmarkSerializer(data=data)
+        self.assertTrue(b.is_valid())
+        b.save(user=self.user)
+        bks = Bookmark.objects.get(url="www.microsoft.org")
+        self.assertSequenceEqual(bks.title, "windows7")
+        self.assertSequenceEqual(bks.tags.all()[0].name, "windows")
+
+    def test_update_bookmark_add_new_tag(self):
+        title = "test title"
+        data  = {"title": title, "url": self.url, "comment": self.comment, "tags": ["linux", "ubuntu"]}
+        bks = Bookmark.objects.get(url=self.url)
+        b = BookmarkSerializer(bks, data=data)
+        self.assertTrue(b.is_valid())
+        b.save()
+        bks = Bookmark.objects.get(url=self.url)
+        self.assertEqual(bks.title, title)
+        self.assertTrue("ubuntu" in [i.name for i in bks.tags.all()])
+        self.assertEqual(len(bks.tags.all()), 2)
+
+    def test_update_bookmark_delete_tag(self):
+
+        data  = {"title": self.title, "url": self.url, "comment": self.comment, "tags": []}
+        bks = Bookmark.objects.get(url=self.url)
+        b = BookmarkSerializer(bks, data=data)
+        self.assertTrue(b.is_valid())
+        b.save()
+        bks = Bookmark.objects.get(url=self.url)
+        self.assertEqual(len(bks.tags.all()), 0)
+
+    def test_add_tags(self):
+        tag = "Centos"
+        data = {"name": tag}
+        t = TagSerializer(data=data)
+        self.assertTrue(t.is_valid())
+        t.save()
+        ts = Tag.objects.get(name=tag)
+        self.assertTrue(ts.name == tag)
+
+    def test_create_user(self):
+        pass
+
+    def test_get_user_bookmarks(self):
+        pass
