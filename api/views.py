@@ -63,6 +63,6 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     """
     Get, update or delete a user
     """
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadonly)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
     queryset = User.objects.all()
     serializer_class = UserSerializer

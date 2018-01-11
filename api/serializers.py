@@ -6,14 +6,14 @@ from .models import Bookmark, Tag
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     bookmarks = serializers.HyperlinkedIdentityField(many=True, view_name="bookmark_detail", read_only=True, format="html")
-    email = serializers.Field(required=True, source="user.email")
 
 
     class Meta:
         model = User
         fields = ("id", "username", "bookmarks", "first_name", "last_name", "email", "password")
         extra_kwargs = {
-            "password": {'write_only': True}
+            "password": {'write_only': True},
+            "email": {"required": True}
         }
 
 

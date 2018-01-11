@@ -5,7 +5,7 @@ from django.utils.six import BytesIO
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from django.contrib.auth.models import User
-from api.serializers import BookmarkSerializer, TagSerializer
+from api.serializers import BookmarkSerializer, TagSerializer, UserSerializer
 from api.models import Bookmark, Tag
 
 
@@ -26,6 +26,7 @@ class BookmarkSerializerTest(TestCase):
         b = Bookmark.objects.create(title=self.title, url=self.url, comment=self.comment, user=self.user)
         b.tags.add(t)
         b.save()
+        self.b_id = b.id
 
     def test_dump_bookmarks(self):
         bks = Bookmark.objects.get(url=self.url)
@@ -87,7 +88,28 @@ class BookmarkSerializerTest(TestCase):
         self.assertTrue(ts.name == tag)
 
     def test_create_user(self):
-        pass
+        username = "thisisatestuser"
+        password = "thisisatestpassword"
+        d = {
+            "username": username,
+            "password": password,
+            "email": "test@email.org"
+        }
+        u = UserSerializer(data=d)
+        self.assertTrue(u.is_valid())
+        u.save()
+
+        user = User.objects.get(username=username)
+        self.assertEqual(user.username, username)
 
     def test_get_user_bookmarks(self):
+        user = User.objects.get(username=self.user.username)
+        b = user.bookmarks.all()
+        self.assertEqual(len(b), 1)
+        self.assertEqual(b[0].title, self.title)
+
+    def test_update_user(self):
+        pass
+
+    def test_update_user_password(self):
         pass
