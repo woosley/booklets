@@ -1,12 +1,15 @@
 from .models import Tag, Bookmark
 from rest_framework import generics
 from django.contrib.auth.models import User
+from django.http import Http404
 from rest_framework import permissions
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view
+from rest_framework.authtoken.models import Token
 
-from .serializers import TagSerializer, BookmarkSerializer, UserSerializer
+from .serializers import TagSerializer, BookmarkSerializer, UserSerializer, TokenSerializer
 from .permissions import IsOwnerOrReadonly
 
 @api_view(['GET'])
@@ -63,6 +66,31 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     """
     Get, update or delete a user
     """
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class UserToken(APIView):
+    """
+    manage user api token
+    """
+
+    permissions_class = (IsOwnerOrReadonly, )
+
+    def get_obj(self, pk):
+        try:
+            return Token.objects.get(pk=pk)
+        except Token.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        """
+        Get user token
+        """
+        token = self.get_obj(pk)
+        return Response(TokenSerializer(token).data)
+
+    def post(self):
+        """
+        post to create user token
+        """
