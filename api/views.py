@@ -79,20 +79,28 @@ class UserToken(APIView):
     permission_classes = (permissions.IsAuthenticated, IsOwner,)
     def get_obj(self, pk):
         try:
-            user = User.objects.get(pk=pk)
-            return Token.objects.get(user=user)
-        except (Token.DoesNotExist, User.DoesNotExist):
+            return Token.objects.get(user=self.get_user(pk))
+        except Token.DoesNotExist:
             raise Http404
 
+    def get_user(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
+        
     def get(self, request, pk, format=None):
         """
         Get user token
         """
         token = self.get_obj(pk)
         return Response(TokenSerializer(token).data)
-
-    def post(self):
+    
+    def post(self, request, pk): 
         """
         post to create user token
         """
-        pass
+        #just create user token directly
+        user = self.get_user(pk)
+        Token.objects.update_or_create(user=user)
+        return Response()
