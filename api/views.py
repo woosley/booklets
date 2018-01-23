@@ -88,19 +88,26 @@ class UserToken(APIView):
             return User.objects.get(pk=pk)
         except User.DoesNotExist:
             raise Http404
-        
+
     def get(self, request, pk, format=None):
         """
         Get user token
         """
         token = self.get_obj(pk)
         return Response(TokenSerializer(token).data)
-    
-    def post(self, request, pk): 
+
+    def post(self, request, pk):
         """
         post to create user token
         """
         #just create user token directly
         user = self.get_user(pk)
-        Token.objects.update_or_create(user=user)
-        return Response()
+        token, _new = Token.objects.get_or_create(user=user)
+        # token.save gives me duplicated user_id
+        if _new:
+            token.save()
+        else:
+            token.delete()
+            token = Token(user=user)
+            token.save()
+        return Response({"token": token.key})
