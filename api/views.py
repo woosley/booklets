@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
 
 from .serializers import TagSerializer, BookmarkSerializer, UserSerializer, TokenSerializer
-from .permissions import IsOwnerOrReadonly
+from .permissions import IsOwnerOrReadonly, IsOwner
 
 @api_view(['GET'])
 def api_root(request, format=None):
@@ -59,6 +59,7 @@ class UserList(generics.ListCreateAPIView):
     """
     List all users, or create a new user
     """
+    permission_classes = (permissions.IsAuthenticated, IsOwner,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -66,7 +67,7 @@ class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     """
     Get, update or delete a user
     """
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticated, IsOwner,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -75,8 +76,7 @@ class UserToken(APIView):
     manage user api token
     """
 
-    permissions_class = (IsOwnerOrReadonly, )
-
+    permission_classes = (permissions.IsAuthenticated, IsOwner,)
     def get_obj(self, pk):
         try:
             user = User.objects.get(pk=pk)
@@ -89,7 +89,6 @@ class UserToken(APIView):
         Get user token
         """
         token = self.get_obj(pk)
-        print(token.key)
         return Response(TokenSerializer(token).data)
 
     def post(self):
