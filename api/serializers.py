@@ -1,22 +1,16 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
-import json
 from django.contrib.auth.models import User
 
 from .models import Bookmark, Tag
 
 
 class TokenSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source="user.username")
     class Meta:
         model = Token
-        fields = ("user", "token")
-        extra_kwargs = {
-            "user": {
-                "readonly": True
-            },
-        }
-
+        fields = ("user", "key", "created")
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     bookmarks = serializers.HyperlinkedIdentityField(

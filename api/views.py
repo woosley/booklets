@@ -79,8 +79,9 @@ class UserToken(APIView):
 
     def get_obj(self, pk):
         try:
-            return Token.objects.get(pk=pk)
-        except Token.DoesNotExist:
+            user = User.objects.get(pk=pk)
+            return Token.objects.get(user=user)
+        except (Token.DoesNotExist, User.DoesNotExist):
             raise Http404
 
     def get(self, request, pk, format=None):
@@ -88,9 +89,11 @@ class UserToken(APIView):
         Get user token
         """
         token = self.get_obj(pk)
+        print(token.key)
         return Response(TokenSerializer(token).data)
 
     def post(self):
         """
         post to create user token
         """
+        pass
