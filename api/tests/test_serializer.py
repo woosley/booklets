@@ -37,7 +37,7 @@ class BookmarkSerializerTest(TestCase):
         self.assertEqual(b.data["url"], self.url)
         self.assertEqual(b.data["comment"], self.comment)
 
-    def test_save_bookmarks(self):
+    def test_save_bookmarks_with_tags(self):
         j = BytesIO(b'{"title": "Centos", "tags":["linux"], "url":"www.centos.org", "comment":"not bad"}')
         data = JSONParser().parse(j)
         b = BookmarkSerializer(data=data)
@@ -46,18 +46,10 @@ class BookmarkSerializerTest(TestCase):
         bks = Bookmark.objects.get(url="www.centos.org")
         self.assertSequenceEqual(bks.title, "Centos")
 
-    def test_save_bookmarks_with_new_tag(self):
-        j = BytesIO(b'{"title": "windows7", "tags":["windows"], "url":"www.microsoft.org", "comment":"cool"}')
-        data = JSONParser().parse(j)
-        b = BookmarkSerializer(data=data)
-        self.assertTrue(b.is_valid())
-        b.save(user=self.user)
-        bks = Bookmark.objects.get(url="www.microsoft.org")
-        self.assertSequenceEqual(bks.title, "windows7")
-        self.assertSequenceEqual(bks.tags.all()[0].name, "windows")
-
-    def test_update_bookmark_add_new_tag(self):
+    def test_update_bookmark_add_tag(self):
         title = "test title"
+        t = Tag.objects.create(name="ubuntu")
+        t.save()
         data  = {"title": title, "url": self.url, "comment": self.comment, "tags": ["linux", "ubuntu"]}
         bks = Bookmark.objects.get(url=self.url)
         b = BookmarkSerializer(bks, data=data)

@@ -33,7 +33,7 @@ class TagDetails(generics.RetrieveUpdateDestroyAPIView):
     """
     Get, update or delete a Tag
     """
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadonly)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
