@@ -41,8 +41,12 @@ class BookmarkList(generics.ListCreateAPIView):
     """
     List all tags, or create a new tag
     """
+
+    def get_queryset(self):
+        user = self.request.user
+        return Bookmark.objects.filter(user=user)
+
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadonly)
-    queryset = Bookmark.objects.all()
     serializer_class = BookmarkSerializer
 
     def perform_create(self, serializer):
@@ -60,7 +64,7 @@ class UserList(generics.ListCreateAPIView):
     """
     List all users, or create a new user
     """
-    permission_classes = (permissions.IsAuthenticated, IsOwner,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
