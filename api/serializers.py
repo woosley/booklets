@@ -12,6 +12,7 @@ class TokenSerializer(serializers.ModelSerializer):
         model = Token
         fields = ("user", "key", "created")
 
+
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     bookmarks = serializers.HyperlinkedIdentityField(
         many=True, view_name="bookmark_detail", read_only=True, format="html")
