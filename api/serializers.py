@@ -30,6 +30,18 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             }
         }
 
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User.objects.create(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def update(self, user, validated_data):
+        password = validated_data.get("password", None)
+        if password:
+            user.set_password(password)
+        return user
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:

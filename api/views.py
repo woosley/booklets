@@ -64,7 +64,7 @@ class UserList(generics.ListCreateAPIView):
     """
     List all users, or create a new user
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    #permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
