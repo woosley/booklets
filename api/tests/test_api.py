@@ -1,4 +1,5 @@
 import base64
+import json
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.utils.six import BytesIO
@@ -15,12 +16,12 @@ class UserTest(TestCase):
         user = User(username=self.username)
         user.set_password(self.password)
         user.save()
-        self.user = user
+        self.myuser = user
         token = Token.objects.create(user=user)
         token.save()
         self.client = Client()
 
-    def test_create_get_delete_users(self):
+    def test_create_get_update_delete_users(self):
         username = 'woosley.xu'
         password = 'password'
         data = {
@@ -42,9 +43,20 @@ class UserTest(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['username'], username)
 
+        new_password = "fake1"
+        data['password'] =  new_password
+
+        res = self.client.put("/api/users/{}/".format(uid), data=json.dumps(data), content_type='application/json', HTTP_AUTHORIZATION=auth)
+        self.assertEqual(res.status_code, 200)
+
+        auth = "Basic {}".format(base64.b64encode("{}:{}".format(username, new_password).encode()).decode())
+        res = self.client.delete("/api/users/{}/".format(uid), HTTP_AUTHORIZATION=auth)
+        self.assertEqual(res.status_code, 204)
 
     def test_create_update_delete_user_token(self):
-        pass
+        auth = "Basic {}".format(base64.b64encode("{}:{}".format(self.username, self.password).encode()).decode())
+        res = self.client.get("/api/users/{}".format(self.myuser.id), HTTP_AUTHORIZATION=auth)
+        self.assertEqual(res.status_code, 200)
 
     def test_create_get_delete_tag(self):
         pass

@@ -41,6 +41,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         password = validated_data.get("password", None)
         if password:
             user.set_password(password)
+            user.save()
         return user
 
 class TagSerializer(serializers.ModelSerializer):
