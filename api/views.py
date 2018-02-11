@@ -29,6 +29,7 @@ class TagList(generics.ListCreateAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
+
 class TagDetails(generics.RetrieveUpdateDestroyAPIView):
     """
     Get, update or delete a Tag
@@ -36,6 +37,8 @@ class TagDetails(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+
+    #only admin can delete tags
 
 class BookmarkList(generics.ListCreateAPIView):
     """

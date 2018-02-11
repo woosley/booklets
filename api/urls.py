@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     path(r'', views.api_root, name='api_root'),
     path(r'tags/', views.TagList.as_view(), name='tag_list'),
-    path(r'tags/<int:pk>/', views.TagDetails.as_view(), name='tag_detail'),
+    path(r'tags/<str:pk>/', views.TagDetails.as_view(), name='tag_detail'),
     path(r'bookmarks/', views.BookmarkList.as_view(), name='bookmark_list'),
     path(r'bookmarks/<int:pk>/', views.BookmarkDetails.as_view(), name='bookmark_detail'),
     path(r'users/', views.UserList.as_view(), name='user_list'),
