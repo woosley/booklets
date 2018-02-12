@@ -82,4 +82,33 @@ class UserTest(TestCase):
         self.assertTrue(res.json()["name"] == tag)
 
     def test_create_get_update_delete_bookmarks(self):
-        pass
+        auth = "Basic {}".format(base64.b64encode("{}:{}".format(self.username, self.password).encode()).decode())
+        data1 = {
+            "url": "http://www.gmail.com",
+            "title": "gmail",
+            "tags": ["google"]
+        }
+        res = self.client.post("/api/tags/", data={"name": "google"}, HTTP_AUTHORIZATION=auth)
+        self.assertTrue(res.status_code == 201)
+        res = self.client.post("/api/tags/", data={"name": "apple"}, HTTP_AUTHORIZATION=auth)
+        self.assertTrue(res.status_code == 201)
+
+
+        res = self.client.post("/api/bookmarks/", data=data1, HTTP_AUTHORIZATION=auth)
+        self.assertTrue(res.status_code == 201)
+        self.assertEqual(res.json()["title"], "gmail")
+
+        _id = res.json()["id"]
+        res = self.client.get("/api/bookmarks/{}/".format(_id), HTTP_AUTHORIZATION=auth)
+        self.assertTrue(res.json()["title"] == "gmail")
+
+
+        data1["tags"] = ["apple"]
+        data1["title"] = "forfun"
+        res = self.client.put("/api/bookmarks/{}/".format(_id), data=json.dumps(data1), content_type="application/json", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()["title"], "forfun")
+        self.assertEqual(res.json()["tags"][0], "apple")
+
+        res = self.client.delete("/api/bookmarks/{}/".format(_id),  HTTP_AUTHORIZATION=auth)
+        self.assertEqual(res.status_code, 204)
