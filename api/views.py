@@ -38,7 +38,9 @@ class TagDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
-    #only admin can delete tags
+    def delete(self, request, *args, **kwargs):
+        return Response({"error": "delete on tag is not allowed"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class BookmarkList(generics.ListCreateAPIView):
     """
@@ -67,9 +69,14 @@ class UserList(generics.ListCreateAPIView):
     """
     List all users, or create a new user
     """
+
     #permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        return Response({"error": "listing users is not supported"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     """

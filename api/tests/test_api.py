@@ -19,6 +19,13 @@ class UserTest(TestCase):
         self.user = user
         self.client = Client()
 
+
+    def test_list_users(self):
+        auth = "Basic {}".format(base64.b64encode("{}:{}".format(self.username, self.password).encode()).decode())
+        res = self.client.get("/api/users/", HTTP_AUTHORIZATION=auth)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json()["error"], "listing users is not supported")
+
     def test_create_get_update_delete_users(self):
         username = 'woosley.xu'
         password = 'password'
@@ -80,6 +87,11 @@ class UserTest(TestCase):
         res = self.client.get("/api/tags/{}/".format(tag), HTTP_AUTHORIZATION=auth)
         self.assertEqual(res.status_code, 200)
         self.assertTrue(res.json()["name"] == tag)
+
+        res = self.client.delete("/api/tags/{}/".format(tag), HTTP_AUTHORIZATION=auth)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.json()["error"], "delete on tag is not allowed")
+
 
     def test_create_get_update_delete_bookmarks(self):
         auth = "Basic {}".format(base64.b64encode("{}:{}".format(self.username, self.password).encode()).decode())
