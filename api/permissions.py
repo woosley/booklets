@@ -16,4 +16,3 @@ class IsOwner(permissions.BasePermission):
         if isinstance(obj, User):
             return request.user == obj
         return request.user == obj.user
-
