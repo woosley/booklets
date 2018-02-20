@@ -79,6 +79,21 @@ class BookmarkSerializerTest(TestCase):
         ts = Tag.objects.get(name=tag)
         self.assertTrue(ts.name == tag)
 
+    def test_update_bookmark_with_new_tag(self):
+
+        tags = ["Cnetos", "redhat", "linux"]
+        data  = {"title": "forfun", "url": self.url, "comment": self.comment, "tags": tags}
+
+
+        bks = Bookmark.objects.get(url=self.url)
+        b = BookmarkSerializer(bks, data=data)
+        self.assertTrue(b.is_valid())
+        b.save()
+        bks = Bookmark.objects.get(url=self.url)
+        self.assertEqual(len(bks.tags.all()), 3)
+        self.assertTrue("Cnetos" in [i.name for i in bks.tags.all()])
+
+
     def test_create_user(self):
         username = "thisisatestuser"
         password = "thisisatestpassword"

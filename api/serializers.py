@@ -50,7 +50,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 class BookmarkSerializer(serializers.ModelSerializer):
     tags = serializers.SlugRelatedField(
-        many=True, read_only=False, slug_field="name", queryset=Tag.objects.all())
+        many=True, read_only=True , slug_field="name")
     user = serializers.ReadOnlyField(source="user.username")
 
     class Meta:
@@ -59,15 +59,15 @@ class BookmarkSerializer(serializers.ModelSerializer):
                   "user")
 
     def create(self, validated_data):
-        tag_data = validated_data.pop("tags", [])
+        tag_data = self.initial_data.get("tags", [])
         bookmark = Bookmark.objects.create(**validated_data)
         for tag in tag_data:
-            t = Tag.objects.get(name=tag)
+            t, _ = Tag.objects.get_or_create(name=tag)
             bookmark.tags.add(t)
         return bookmark
 
     def update(self, bookmark, validated_data):
-        tag_data = validated_data.pop("tags", [])
+        tag_data = self.initial_data.get("tags", [])
         bookmark.url = validated_data.get("url")
         bookmark.comment = validated_data.get("comment", "")
         bookmark.title = validated_data.get("title", "")
@@ -77,7 +77,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
             if i.name not in tag_data:
                 bookmark.tags.remove(i)
         for tag in tag_data:
-            t = Tag.objects.get(name=tag)
+            t, _ = Tag.objects.get_or_create(name=tag)
             bookmark.tags.add(t)
         bookmark.save()
         return bookmark
