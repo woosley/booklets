@@ -20,6 +20,32 @@ tags:
 # everything after are comments
 comment:"""
 
+def parse_content(stream):
+    """parse content from stream"""
+    data = {}
+    in_comments = False
+    for line in stream.readline():
+        if in_comments:
+            data["comments"] += line
+        line = line.rstrip("\n")
+        if line.startswith("#"):
+            continue
+        if line == "":
+            continue
+
+        kv = line.split(":", 2)
+        if len[kv] == 2:
+            if kv[0] in ["url", "title"]:
+                data[kv[0]] = kv[1]
+                continue
+            if kv[0] == "tags":
+                data[kv[0]] = kv[1].split(",")
+                continue
+            if kv[0] == "comment":
+                data[kv[0]] = kv[1]
+                in_comments = True
+    return data
+
 class Config(object):
 
     path = Path.joinpath(Path.home(), ".booklets.json")
@@ -54,8 +80,10 @@ class BookletsClient(object):
 
     def save(self, data):
         "save data to bookmark server"
-        tags = data['tags']
-        pass
+        res = self.client.post(self.get_server("/bookmarks/"), data=data,
+                               headers={"Authorization": "token {}".format(self.config.token)})
+        assert res.status_code == 201
+        click.echo(res.json())
 
     def create_user(self, username, email, password):
         data = {
@@ -104,8 +132,7 @@ def new():
         if retcode != 0:
             raise Exception("editor returned non-zero code: {}".format(retcode))
         temp.seek(0)
-        content = temp.read().decode()
-        data = parse_content
+        data = parse_content(temp)
         if not data:
             continue
         bk.save(data)
