@@ -20,31 +20,40 @@ tags:
 # everything after are comments
 comment:"""
 
-def parse_content(stream):
+def assert_code(res, code):
+    if res.status_code != code:
+        raise Exception("bad return code {} from server\nServer content{}".format(res.status_code, res.text))
+
+def parse_content(fname):
     """parse content from stream"""
+    stream = open(fname)
     data = {}
     in_comments = False
-    for line in stream.readline():
+    while True:
+        line = stream.readline()
+        if not line: break
+
         if in_comments:
             data["comments"] += line
         line = line.rstrip("\n")
-        if line.startswith("#"):
-            continue
-        if line == "":
+        if line.startswith("#") or line == "":
             continue
 
         kv = line.split(":", 2)
-        if len[kv] == 2:
+        if len(kv) == 2:
             if kv[0] in ["url", "title"]:
-                data[kv[0]] = kv[1]
+                data[kv[0].strip()] = kv[1].strip()
                 continue
             if kv[0] == "tags":
-                data[kv[0]] = kv[1].split(",")
+                data[kv[0].strip()] = [i.strip() for i in kv[1].split(",")]
                 continue
             if kv[0] == "comment":
-                data[kv[0]] = kv[1]
+                data[kv[0].strip()] = kv[1].strip()
                 in_comments = True
+    if not data["url"]:
+        return False
     return data
+
 
 class Config(object):
 
@@ -82,7 +91,7 @@ class BookletsClient(object):
         "save data to bookmark server"
         res = self.client.post(self.get_server("/bookmarks/"), data=data,
                                headers={"Authorization": "token {}".format(self.config.token)})
-        assert res.status_code == 201
+        assert_code(res, 201)
         click.echo(res.json())
 
     def create_user(self, username, email, password):
@@ -92,11 +101,11 @@ class BookletsClient(object):
             "password": password
         }
         res = self.client.post(self.get_server("/users/"), data=data)
-        assert res.status_code == 201
+        assert_code(res, 201)
         uid = res.json()["id"]
         #auth = "Basic {}".format(base64.b64encode("{}:{}".format(username, password).encode()).decode())
         res = self.client.post(self.get_server("/users/{}/token/".format(uid)), data=data, auth=requests.auth.HTTPBasicAuth(username, password))
-        assert res.status_code == 201
+        assert_code(res, 201)
         return res.json()["token"]
 
     def get_server(self, path):
@@ -124,18 +133,23 @@ def show():
 def new():
     # create a bookmark
     editor = "vim"
-    temp =  tempfile.NamedTemporaryFile()
-    temp.write(template.encode())
+    temp =  tempfile.NamedTemporaryFile(mode="w+")
+    temp.write(template)
     temp.flush()
     while True:
         retcode = subprocess.call([editor, temp.name])
         if retcode != 0:
             raise Exception("editor returned non-zero code: {}".format(retcode))
-        temp.seek(0)
-        data = parse_content(temp)
+        data = parse_content(temp.name)
         if not data:
-            continue
-        bk.save(data)
+            yes = prompt("bad data from file, continue to edit(y/n)?")
+            if yes == "y":
+                continue
+            else:
+                break
+        else:
+            bk.save(data)
+            break
 
 @click.command()
 def init():
