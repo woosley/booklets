@@ -124,3 +124,15 @@ class UserTest(TestCase):
 
         res = self.client.delete("/api/bookmarks/{}/".format(_id),  HTTP_AUTHORIZATION=auth)
         self.assertEqual(res.status_code, 204)
+
+    def test_create_duplicate_urls(self):
+        auth = "Basic {}".format(base64.b64encode("{}:{}".format(self.username, self.password).encode()).decode())
+        data1 = {
+            "url": "http://www.gmail.com",
+            "title": "gmail",
+            "tags": ["google"]
+        }
+        res = self.client.post("/api/tags/", data={"name": "google"}, HTTP_AUTHORIZATION=auth)
+        self.assertTrue(res.status_code == 201)
+        res = self.client.post("/api/tags/", data={"name": "google"}, HTTP_AUTHORIZATION=auth)
+        self.assertEqual(res.status_code, 400)

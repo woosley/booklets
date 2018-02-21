@@ -20,6 +20,8 @@ class Bookmark(models.Model):
     tags = models.ManyToManyField(Tag)
     user = models.ForeignKey('auth.User', related_name="bookmarks", on_delete=models.CASCADE, null=False)
 
-
     def __str__(self):
         return self.url
+
+    class Meta:
+        unique_together = ("user", "url")
