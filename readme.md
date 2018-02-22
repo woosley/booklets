@@ -1,5 +1,5 @@
 # booklet 
-[![Build Status](https://travis-ci.org/woosley/booklets.svg?branch=master)](https://travis-ci.org/woosley/booklets)
+[![Build Status](https://travis-ci.org/woosley/booklets.svg?branch=master)](https://travis-ci.org/woosley/booklets)[![codecov](https://codecov.io/gh/woosley/booklets/branch/master/graph/badge.svg)](https://codecov.io/gh/woosley/booklets)
 
 Personal bookmark service. 
 
