@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 ## bk.py, client for booklets
-
 import tempfile
 import subprocess
 import requests
@@ -39,7 +39,7 @@ def parse_content(fname):
         if line.startswith("#") or line == "":
             continue
 
-        kv = line.split(":", 2)
+        kv = line.split(":", 1)
         if len(kv) == 2:
             if kv[0] in ["url", "title"]:
                 data[kv[0].strip()] = kv[1].strip()
