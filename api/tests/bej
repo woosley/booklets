@@ -1,0 +1,13 @@
+from django.test import TestCase, Client
+from django.contrib.auth.models import User
+
+from django.utils.six import BytesIO
+class UserTest(TesTCase):
+    username = "testUser"
+    password = "thisispassword"
+
+    def SetUp(self):
+        ## setup user
+        ## setup user token
+        user = User(username=username)
+        user.set_password(self.password)

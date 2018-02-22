@@ -136,3 +136,16 @@ class UserTest(TestCase):
         self.assertTrue(res.status_code == 201)
         res = self.client.post("/api/tags/", data={"name": "google"}, HTTP_AUTHORIZATION=auth)
         self.assertEqual(res.status_code, 400)
+
+    def test_create_update_bookmark_with_new_tag(self):
+
+        auth = "Basic {}".format(base64.b64encode("{}:{}".format(self.username, self.password).encode()).decode())
+        data1 = {
+            "url": "http://www.gmail.com",
+            "title": "gmail",
+            "tags": ["google"]
+        }
+
+        res = self.client.post("/api/bookmarks/", data=data1, HTTP_AUTHORIZATION=auth)
+        self.assertTrue(res.status_code == 201)
+        self.assertEqual(res.json()["tags"][0], "google")
