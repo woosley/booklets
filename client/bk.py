@@ -54,7 +54,6 @@ def parse_content(fname):
         return False
     return data
 
-
 class Config(object):
 
     path = Path.joinpath(Path.home(), ".booklets.json")
@@ -114,6 +113,12 @@ class BookletsClient(object):
             raise Exception("booklets server is not configured")
         return "{}/api{}".format(server, path)
 
+    def get_bookmarks(self, tag=None):
+        res = self.client.get(self.get_server("/bookmarks/"),
+                              headers={"Authorization": "token {}".format(self.config.token)})
+        assert_code(res, 200)
+        bookmarks = res.json()
+        print(bookmarks)
 
 bk = BookletsClient(config)
 
@@ -126,8 +131,11 @@ def refresh_token():
     pass
 
 @click.command()
-def show():
-    pass
+@click.option("--tag")
+def show(tag):
+    # list all bookmarks or under a tag
+    bk.get_bookmarks(tag=tag)
+
 
 @click.command()
 def new():
@@ -184,6 +192,7 @@ def init():
 
 entry_point.add_command(new)
 entry_point.add_command(init)
+entry_point.add_command(show)
 entry_point.add_command(refresh_token)
 
 

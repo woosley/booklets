@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 from django.contrib.auth.models import User
+from django.http import QueryDict
 
 from .models import Bookmark, Tag
 
@@ -59,7 +60,12 @@ class BookmarkSerializer(serializers.ModelSerializer):
                   "user")
 
     def create(self, validated_data):
-        tag_data = self.initial_data.get("tags", [])
+        initial_data = self.initial_data
+        if isinstance(initial_data, QueryDict):
+            tag_data = self.initial_data.getlist("tags", [])
+        else:
+            tag_data = self.initial_data.get("tags", [])
+
         bookmark = Bookmark.objects.create(**validated_data)
         for tag in tag_data:
             t, _ = Tag.objects.get_or_create(name=tag)
@@ -67,7 +73,12 @@ class BookmarkSerializer(serializers.ModelSerializer):
         return bookmark
 
     def update(self, bookmark, validated_data):
-        tag_data = self.initial_data.get("tags", [])
+        initial_data = self.initial_data
+        if isinstance(initial_data, QueryDict):
+            tag_data = self.initial_data.getlist("tags", [])
+        else:
+            tag_data = self.initial_data.get("tags", [])
+
         bookmark.url = validated_data.get("url")
         bookmark.comment = validated_data.get("comment", "")
         bookmark.title = validated_data.get("title", "")

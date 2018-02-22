@@ -44,7 +44,7 @@ class TagDetails(generics.RetrieveUpdateDestroyAPIView):
 
 class BookmarkList(generics.ListCreateAPIView):
     """
-    List all tags, or create a new tag
+    List all bookmarks, or create a new bookmark
     """
 
     def get_queryset(self):
