@@ -2,6 +2,7 @@
 ## bk.py, client for booklets
 import tempfile
 import subprocess
+import tabulate
 import requests
 import click
 import json
@@ -113,12 +114,19 @@ class BookletsClient(object):
             raise Exception("booklets server is not configured")
         return "{}/api{}".format(server, path)
 
-    def get_bookmarks(self, tag=None):
-        res = self.client.get(self.get_server("/bookmarks/"),
-                              headers={"Authorization": "token {}".format(self.config.token)})
+    def get_bookmarks(self, tagorid):
+        if tagorid.isdigit():
+            path = "/bookmarks/{}/".format(tagorid)
+        else:
+            path = "/bookmarks/".format(tagorid)
+
+        res = self.client.get(self.get_server(path), headers={"Authorization":
+                                                              "token {}".format(self.config.token)})
         assert_code(res, 200)
-        bookmarks = res.json()
-        print(bookmarks)
+        if tagorid.isdigit():
+            return [res.json()]
+        else:
+            return [i for i in res.json()["results"] if tagorid in i["tags"]]
 
 bk = BookletsClient(config)
 
@@ -131,11 +139,14 @@ def refresh_token():
     pass
 
 @click.command()
-@click.option("--tag")
-def show(tag):
+@click.argument("tagorid")
+def show(tagorid):
     # list all bookmarks or under a tag
-    bk.get_bookmarks(tag=tag)
-
+    data = bk.get_bookmarks(tagorid)
+    table = [["id", "url", "tag(s)"]]
+    for i in data:
+        table.append([i["id"], i["url"], ",".join(i["tags"])])
+    print(tabulate.tabulate(table, headers="firstrow"))
 
 @click.command()
 def new():
