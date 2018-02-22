@@ -1,4 +1,5 @@
-# booklet
+# booklet 
+[![Build Status](https://travis-ci.org/woosley/booklets.svg?branch=master)](https://travis-ci.org/woosley/booklets)
 
 Personal bookmark service. 
 
