@@ -32,4 +32,4 @@ python manage.py runserver 0:$PORT
 ```
 
 # Use
-Check client (doc)[./client/README.md]
+Check client [doc](./client/README.md)
