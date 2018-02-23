@@ -175,6 +175,7 @@ def new():
                 break
         else:
             bk.save(data)
+            click.echo("bookmark created")
             break
 
 @click.command()
@@ -195,7 +196,7 @@ def init():
         email = prompt("Email: ")
         while True:
             password0 = prompt("Password: ", is_password=True)
-            password1 = prompt("Password: ", is_password=True)
+            password1 = prompt("Password (again): ", is_password=True)
             if password0 == password1:
                 break
             else:
@@ -206,6 +207,7 @@ def init():
     config.username = username
     config.token = token
     config.save()
+    click.echo("Your profile is saved at {}".format(config.path))
 
 @click.command()
 @click.argument("_id")
@@ -230,6 +232,7 @@ def edit(_id):
                 break
         else:
             bk.update(_id, data)
+            click.echo("bookmark updated")
             break
 
 
