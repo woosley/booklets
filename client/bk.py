@@ -11,16 +11,17 @@ from pathlib import Path
 from prompt_toolkit import prompt
 
 template = """# insert bookmark url here
-url:
+url: {}
 
-title:
+title: {}
 
 # insert tags here
-tags:
+tags: {}
 
 # everything after are comments
-comment:"""
+comment:{}"""
 
+editor = os.environ.get("EDITOR", "") or "vim"
 def assert_code(res, code):
     if res.status_code != code:
         raise Exception("bad return code {} from server\nServer content{}".format(res.status_code, res.text))
@@ -94,6 +95,13 @@ class BookletsClient(object):
         assert_code(res, 201)
         click.echo(res.json())
 
+    def update(self, _id, data):
+        """update a bookmark """
+        res = self.client.put(self.get_server("/bookmarks/{}/".format(_id)), data=data,
+                              headers={"Authorization": "token {}".format(self.config.token)})
+        assert_code(res, 200)
+        click.echo(res.json())
+
     def create_user(self, username, email, password):
         data = {
             "username": username,
@@ -151,9 +159,8 @@ def show(tagorid):
 @click.command()
 def new():
     # create a bookmark
-    editor = "vim"
     temp =  tempfile.NamedTemporaryFile(mode="w+")
-    temp.write(template)
+    temp.write(template.format("", "", "", ""))
     temp.flush()
     while True:
         retcode = subprocess.call([editor, temp.name])
@@ -168,6 +175,7 @@ def new():
                 break
         else:
             bk.save(data)
+            click.echo("bookmark created")
             break
 
 @click.command()
@@ -188,7 +196,7 @@ def init():
         email = prompt("Email: ")
         while True:
             password0 = prompt("Password: ", is_password=True)
-            password1 = prompt("Password: ", is_password=True)
+            password1 = prompt("Password (again): ", is_password=True)
             if password0 == password1:
                 break
             else:
@@ -199,11 +207,39 @@ def init():
     config.username = username
     config.token = token
     config.save()
+    click.echo("Your profile is saved at {}".format(config.path))
+
+@click.command()
+@click.argument("_id")
+def edit(_id):
+    """edit a bookmark"""
+    bookmark = bk.get_bookmarks(_id)[0]
+    temp =  tempfile.NamedTemporaryFile(mode="w+")
+    temp.write(template.format(bookmark["url"], bookmark["title"],
+                               ",".join(bookmark["tags"]),
+                               bookmark["comment"]))
+    temp.flush()
+    while True:
+        retcode = subprocess.call([editor, temp.name])
+        if retcode != 0:
+            raise Exception("editor returned non-zero code: {}".format(retcode))
+        data = parse_content(temp.name)
+        if not data:
+            yes = prompt("bad data from file, continue to edit(y/n)?")
+            if yes == "y":
+                continue
+            else:
+                break
+        else:
+            bk.update(_id, data)
+            click.echo("bookmark updated")
+            break
 
 
 entry_point.add_command(new)
 entry_point.add_command(init)
 entry_point.add_command(show)
+entry_point.add_command(edit)
 entry_point.add_command(refresh_token)
 
 
