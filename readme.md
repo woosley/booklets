@@ -32,7 +32,7 @@ I don't want to use other webservices to deploy this small application. so
 
 
 ```
-python manage.py collectstatics
+python manage.py collectstatic
 python app.py
 ```
 
