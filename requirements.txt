@@ -2,3 +2,5 @@ djangorestframework
 markdown
 django
 tabulate
+waitress
+whitenoise

@@ -23,13 +23,20 @@ python manage.py makemigrations api
 python manage.py migrate
 ```
 
-## Run
+## Deploy
 
-as a personal project, since there is no performance requirement, just run 
+I don't want to use other webservices to deploy this small application. so
+
+- [waitress](https://github.com/Pylons/waitress) is used to run the web server
+- [whitenoise](http://whitenoise.evans.io/en/stable/index.html) is used to serve staticfiles
+
 
 ```
-python manage.py runserver 0:$PORT
+python manage.py collectstatics
+python app.py
 ```
+
+Now you can access http://localhost:8080 to browser the api
 
 # Use
 Check client [doc](./client/README.md)
