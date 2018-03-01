@@ -4,10 +4,10 @@ python:
   - "3.6"
 install:
   - pip install -r requirements.txt
-  - pip install coverage codecov
+  - pip install pytest-cov codecov
 
 script:
-  - coverage run --source=./api manage.py test
+  - py.test --cov=api
 
 after_success:
   - codecov -t fbcea2be-05b0-491e-b935-3364a6836d86

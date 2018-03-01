@@ -4,3 +4,4 @@ django
 tabulate
 waitress
 whitenoise
+pytest-django
