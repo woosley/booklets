@@ -102,6 +102,13 @@ class BookletsClient(object):
         assert_code(res, 200)
         click.echo(res.json())
 
+    def delete(self, _id):
+        """ delete bookmark"""
+        res = self.client.delete(self.get_server("/bookmarks/{}/").format(_id),
+                                 headers={"Authorization": "token {}".format(self.config.token)})
+        assert_code(res, 204)
+        click.echo(res.json())
+
     def create_user(self, username, email, password):
         data = {
             "username": username,
@@ -235,8 +242,15 @@ def edit(_id):
             click.echo("bookmark updated")
             break
 
+@click.command()
+@click.argument("_id")
+def delete(_id):
+    bookmark = bk.get_bookmarks(_id)[0]
+    bk.delete(_id)
+    click.echo("bookmark deleted")
 
 entry_point.add_command(new)
+entry_point.add_command(delete)
 entry_point.add_command(init)
 entry_point.add_command(show)
 entry_point.add_command(edit)
